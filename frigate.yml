@@ -1,0 +1,89 @@
+mqtt:
+  host: 192.168.1.200
+  user: deprecated
+  password: deprecated
+
+go2rtc:
+  streams:
+    garden_frigate: 
+      - http://192.168.1.23/flv?port=1935&app=bcs&stream=channel0_main.bcs&userdeprecated
+      - "ffmpeg:garden_frigate#audio=opus"
+    garden_frigate_sub: 
+      - http://192.168.1.23/flv?port=1935&app=bcs&stream=channel0_ext.bcs&deprecated
+    entrance_frigate: 
+      - rtsp://antonahlstrom:emoemo@192.168.1.60:554/stream1
+      - ffmpeg:entrance_frigate
+
+birdseye:
+  enabled: True
+  mode: continuous
+
+cameras:
+  garden_frigate:
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/garden_frigate?video=copy&audio=aac
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+        - path: rtsp://127.0.0.1:8554/garden_frigate_sub?video=copy
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+    detect:
+      enabled: True
+    snapshots:
+      enabled: True
+      required_zones:
+        - grass_and_room
+    record:
+      enabled: True
+      events:
+        retain:
+          default: 5
+    zones:
+      full:
+        coordinates: 605,0,2304,0,2304,1296,347,1296,0,1026,0,391
+      grass:
+        coordinates: 24,593,288,1258,919,1050,1127,701,683,169
+      room:
+        coordinates: 2304,0,2121,1296,871,1189,941,306,1338,0
+      grass_and_room:
+        coordinates: 316,1246,2304,1296,2304,0,895,83,518,456,0,915
+
+  entrance_frigate:
+    ffmpeg:
+      inputs:
+        - path: rtsp://deprecated@192.168.1.60:554/stream1
+          roles:
+            - rtmp
+            - record
+            - detect
+    detect:
+      enabled: True
+      width: 1920
+      height: 1080
+    snapshots:
+      enabled: True
+    record:
+      enabled: True
+      events:
+        retain:
+          default: 5
+    motion:
+      mask:
+        - 1841,1080,1920,1080,1920,0,1836,0,1602,477
+        - 1631,871,1819,724,1709,413,1479,554
+
+
+
+objects:
+  track:
+    - person
+
+detectors:
+  cpu1:
+    type: cpu
+    num_threads: 2
+
+

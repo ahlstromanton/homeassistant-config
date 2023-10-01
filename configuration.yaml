@@ -1,0 +1,99 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+recorder:
+  db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 192.168.1.175
+    - 192.168.1.103
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+sensor: !include sensors.yaml
+
+influxdb:
+  host: 192.168.1.120
+  port: 8086
+  database: homeassistant-influx
+  username: homeassistant
+  password: homeassistant
+  max_retries: 3
+  default_measurement: state
+
+homeassistant:
+  allowlist_external_urls:
+    - "http://192.168.1.120/config/local/garden.png"
+  customize:
+    sensor.develco_zhemi101_summation_delivered:
+      unit_of_measurement: "kWh"
+
+# Text to speech
+tts:
+  - platform: google_translate
+    language: "sv"
+
+zone:
+  - name: Home
+    latitude: !secret home_latitude
+    longitude: !secret home_longitude
+    radius: 50
+    icon: mdi:home-circle
+
+#### Proximity ####
+proximity:
+  home:
+    devices:
+      - person.anton
+      - person.kajsa
+    tolerance: 50
+    unit_of_measurement: m
+
+# WoL Desktop
+switch:
+  - platform: wake_on_lan
+    name: "Desktop WoL"
+    mac: "deprecated"
+    host: 192.168.1.10
+  - platform: wake_on_lan
+    name: "Ubuntu Server WoL"
+    mac: "deprecated"
+    host: 192.168.1.63
+    turn_off:
+      service: shell_command.turn_off_ubuntuserver
+
+# Notification group - bådas telefoner
+
+notify:
+  - platform: group
+    name: "both_phones"
+    services:
+      - service: mobile_app_antons_pixel_7_pro
+      - service: mobile_app_kajsas_s22
+
+# Telegram
+telegram_bot:
+  - platform: broadcast
+    api_key: !secret telegram_token
+    allowed_chat_ids:
+      - 1999256073
+
+wake_on_lan:
+
+#### Used for Roborock map card ####
+# Rums-id nedervåning: [[16, '230001055629'], [17, '230001058358'], [18, '230001058359'], [19, '230001058360'], [20, '230001058361']]
+
+# Home Connect alt
+home_connect_alt:
+  client_id: deprecated
+  client_secret: deprecated
+
+shell_command:
+  turn_off_ubuntuserver: "ssh hassio@192.168.1.10 sudo systemctl suspend"

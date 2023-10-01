@@ -1,0 +1,49 @@
+spela_p3_i_vardagsrummet:
+  alias: Spela P3 i Vardagsrummet
+  sequence:
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.25
+    target:
+      entity_id: media_player.sonos_vardagsrum_2
+  - service: media_player.play_media
+    data:
+      media_content_id: http://sverigesradio.se/topsy/direkt/srapi/164.mp3
+      media_content_type: music
+    target:
+      entity_id: media_player.sonos_vardagsrum_2
+  mode: queued
+all_lights_off:
+  alias: Turn off lights in all areas
+  sequence:
+  - service: light.turn_off
+    data: {}
+    target:
+      area_id:
+      - antons_kontor
+      - hall
+      - innergard
+      - kajsas_kontor
+      - kok
+      - sovrum
+      - trapphus
+      - tvattstuga
+      - uterum
+      - vardagsrum
+  icon: mdi:alarm-light-off-outline
+  mode: single
+turn_off_lights_downstairs:
+  alias: Turn off lights downstairs
+  sequence:
+  - service: light.turn_off
+    data: {}
+    target:
+      area_id:
+      - uterum
+      - vardagsrum
+      - tvattstuga
+      - kok
+      - innergard
+      - hall
+  mode: single
+  icon: mdi:lightbulb-multiple-off-outline

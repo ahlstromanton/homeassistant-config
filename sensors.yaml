@@ -1,0 +1,201 @@
+########## SENSORS #########
+
+### Visa tid och datum ###
+- platform: time_date
+  display_options:
+    - "time"
+    - "date"
+    - "date_time"
+    - "date_time_utc"
+    - "time_date"
+
+  ### Övervakning av Raspberry Pi ###
+- platform: systemmonitor
+  resources:
+    - type: disk_use_percent
+      arg: /config
+    - type: memory_use_percent
+    - type: processor_use
+    - type: processor_temperature
+
+
+  ### Översätt veckodagar till svenska ###
+- platform: template
+  sensors:
+    current_weekday_translation:
+      friendly_name: "Current Weekday Translation"
+      value_template: >
+        {% set current_weekday = now().strftime('%A') %}
+        {% if current_weekday == "Monday" %}
+          Måndag
+        {% elif current_weekday == "Tuesday" %}
+          Tisdag
+        {% elif current_weekday == "Wednesday" %}
+          Onsdag
+        {% elif current_weekday == "Thursday" %}
+          Torsdag
+        {% elif current_weekday == "Friday" %}
+          Fredag
+        {% elif current_weekday == "Saturday" %}
+          Lördag
+        {% elif current_weekday == "Sunday" %}
+          Söndag
+        {% endif %}
+
+  ### Minuter kvar till nästa alarm på Antons S21 Ultra ###
+- platform: template
+  sensors:
+    minutes_next_alarm_anton:
+      friendly_name: "Minutes until Next Alarm Anton"
+      unit_of_measurement: "m"
+      #entity_id: sensor.time
+      value_template: >-
+        {% set dummy = states("sensor.time") %}
+        {{((states('sensor.pixel_7_pro')|as_timestamp|int - now()|as_timestamp|int)/60)|int}}
+      availability_template: "{{ not is_state('sensor.antons_s21_ultra_next_alarm','unavailable') }}"
+      attribute_templates:
+        time: "{{ state_attr('sensor.antons_s21_ultra_next_alarm','Local Time') }}"
+
+- platform: template
+  sensors:
+    lights_nr_on:
+      friendly_name: "Antal lampor på"
+      value_template: "{{ expand('light.all_lights')
+        | selectattr('state', 'eq', 'on')
+        | map(attribute='entity_id')
+        | select('search', 'light.*')
+        | list
+        | count
+        }} "
+    switch_nr_on:
+      friendly_name: "Antal switchar på"
+      value_template: "{{ expand('switch.all_switches')
+        | selectattr('state', 'eq', 'on')
+        | map(attribute='entity_id')
+        | select('search', 'switch.*')
+        | list
+        | count
+        }} "
+
+  ### ESPresense ###
+- platform: mqtt_room
+  name: "Anton Samsung S21 Ultra BLE"
+  device_id: "samsung:7e86ef82bb4f"
+  state_topic: "espresense/rooms"
+  timeout: 5
+  away_timeout: 20
+- platform: mqtt_room
+  name: "Anton Garmin Forerunner 245 BLE"
+  device_id: "garmin:90f15751a4ca"
+  state_topic: "espresense/rooms"
+  timeout: 5
+  away_timeout: 20
+
+
+
+
+  
+
+- platform: sjofartsverket_viva
+  name: Vind
+  region: 164
+  scan_interval: 30
+- platform: template
+  sensors:
+    vind2:
+      friendly_name: "Byvind"
+      entity_id: sensor.vind
+      unit_of_measurement: "m/s"
+      value_template: "{{ state_attr('sensor.vind', 'Wind max') }}"
+
+- platform: template
+  sensors:
+    utetemperatur:
+      friendly_name: "Utetemp"
+      entity_id: weather.deprecated
+      unit_of_measurement: "°C"
+      value_template: "{{ state_attr('deprecated', 'temperature') }}"
+
+- platform: template
+  sensors:
+    water_liters_consumed:
+      friendly_name: "Water Liters Consumed"
+      entity_id: sensor.water_meter_total
+      unit_of_measurement: "L"
+      value_template: "{{ ( states('sensor.water_meter_total') | float * 1000 ) | round(3) }}"
+
+- platform: template
+  sensors:
+    energy_usage_kwh:
+      friendly_name: "Frient in kWh"
+      device_class: energy
+      entity_id: sensor.develco_zhemi101_summation_delivered
+      unit_of_measurement: "kWh"
+      value_template: "{{ ( states('sensor.develco_zhemi101_summation_delivered') ) }}"
+
+- platform: integration
+  source: sensor.develco_zhemi101_summation_delivered
+  name: energy_spent
+  unit_prefix: k
+  round: 2
+
+  ### Pollenprognos Gräs
+- platform: template
+  sensors:
+    pollenhalt_grass:
+      friendly_name: "Pollenhalt Gräs"
+      value_template: >
+        {% set pollen_value = states('sensor.pollen_goteborg_gras') | float %}
+        {% if pollen_value == 0 %}
+          Inget
+        {% elif pollen_value == 1 %}
+          Lite
+        {% elif pollen_value == 2 %}
+          Ganska lite
+        {% elif pollen_value == 3 %}
+          En del
+        {% elif pollen_value == 4 %}
+          Ganska mycket
+        {% elif pollen_value == 5 %}
+          Mycket
+        {% elif pollen_value == 6 %}
+          Väldigt mycket
+        {% elif pollen_value == 7 %}
+          Extremt mycket
+        {% endif %}
+
+  ### Pollenprognos Björk
+- platform: template
+  sensors:
+    pollenhalt_bjork:
+      friendly_name: "Pollenhalt Björk"
+      value_template: >
+        {% set pollen_value = states('sensor.pollen_goteborg_bjork') | float %}
+        {% if pollen_value == 0 %}
+          Inget
+        {% elif pollen_value == 1 %}
+          Lite
+        {% elif pollen_value == 2 %}
+          Ganska lite
+        {% elif pollen_value == 3 %}
+          En del
+        {% elif pollen_value == 4 %}
+          Ganska mycket
+        {% elif pollen_value == 5 %}
+          Mycket
+        {% elif pollen_value == 6 %}
+          Väldigt mycket
+        {% elif pollen_value == 7 %}
+          Extremt mycket
+        {% endif %}
+
+
+
+- platform: rest
+  resource: https://services.viva.sjofartsverket.se:8080/output/vivaoutputservice.svc/vivastation/89
+  name: "VIVA Vattenstånd och Vattentemp"
+  value_template: '{{ value_json.GetSingleStationResult.Samples[1].Value }}'
+  unit_of_measurement: "°C"
+  scan_interval: 300  # Adjust the interval as needed
+  json_attributes:
+    - GetSingleStationResult
