@@ -1,15 +1,15 @@
 mqtt:
-  host: 192.168.1.200
-  user: deprecated
-  password: deprecated
+  host: 192.168.1.120
+  user: ###
+  password: ###
 
 go2rtc:
   streams:
     garden_frigate: 
-      - http://192.168.1.23/flv?port=1935&app=bcs&stream=channel0_main.bcs&userdeprecated
+      - http://192.168.1.23/flv?port=1935&app=bcs&stream=channel0_main.bcs&user=admin&####
       - "ffmpeg:garden_frigate#audio=opus"
     garden_frigate_sub: 
-      - http://192.168.1.23/flv?port=1935&app=bcs&stream=channel0_ext.bcs&deprecated
+      - http://192.168.1.23/flv?port=1935&app=bcs&stream=channel0_ext.bcs&#####
     entrance_frigate: 
       - rtsp://antonahlstrom:emoemo@192.168.1.60:554/stream1
       - ffmpeg:entrance_frigate
@@ -30,6 +30,12 @@ cameras:
           input_args: preset-rtsp-restream
           roles:
             - detect
+    objects:
+      track:
+        - person
+      filters:
+        person:
+          threshold: 0.8
     detect:
       enabled: True
     snapshots:
@@ -38,9 +44,13 @@ cameras:
         - grass_and_room
     record:
       enabled: True
+      retain:
+        days: 3
+        mode: active_objects
       events:
         retain:
-          default: 5
+          default: 4
+          mode: active_objects
     zones:
       full:
         coordinates: 605,0,2304,0,2304,1296,347,1296,0,1026,0,391
@@ -54,11 +64,17 @@ cameras:
   entrance_frigate:
     ffmpeg:
       inputs:
-        - path: rtsp://deprecated@192.168.1.60:554/stream1
+        - path: rtsp://#######:#####@192.168.1.60:554/stream1
           roles:
             - rtmp
             - record
             - detect
+    objects:
+      track:
+        - person
+      filters:
+        person:
+          threshold: 0.73        
     detect:
       enabled: True
       width: 1920
@@ -67,19 +83,29 @@ cameras:
       enabled: True
     record:
       enabled: True
+      retain: 
+        days: 3
+        mode: active_objects
       events:
         retain:
-          default: 5
+          default: 4
+          mode: active_objects
+        required_zones: 
+            - door
     motion:
       mask:
         - 1841,1080,1920,1080,1920,0,1836,0,1602,477
         - 1631,871,1819,724,1709,413,1479,554
+    zones:
+      door:
+        coordinates: 0,63,0,1080,889,1080,1396,1080,1623,1080,1791,1080
 
 
 
 objects:
   track:
     - person
+
 
 detectors:
   cpu1:

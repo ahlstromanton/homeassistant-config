@@ -42,60 +42,6 @@
           Söndag
         {% endif %}
 
-  ### Minuter kvar till nästa alarm på Antons S21 Ultra ###
-- platform: template
-  sensors:
-    minutes_next_alarm_anton:
-      friendly_name: "Minutes until Next Alarm Anton"
-      unit_of_measurement: "m"
-      #entity_id: sensor.time
-      value_template: >-
-        {% set dummy = states("sensor.time") %}
-        {{((states('sensor.pixel_7_pro')|as_timestamp|int - now()|as_timestamp|int)/60)|int}}
-      availability_template: "{{ not is_state('sensor.antons_s21_ultra_next_alarm','unavailable') }}"
-      attribute_templates:
-        time: "{{ state_attr('sensor.antons_s21_ultra_next_alarm','Local Time') }}"
-
-- platform: template
-  sensors:
-    lights_nr_on:
-      friendly_name: "Antal lampor på"
-      value_template: "{{ expand('light.all_lights')
-        | selectattr('state', 'eq', 'on')
-        | map(attribute='entity_id')
-        | select('search', 'light.*')
-        | list
-        | count
-        }} "
-    switch_nr_on:
-      friendly_name: "Antal switchar på"
-      value_template: "{{ expand('switch.all_switches')
-        | selectattr('state', 'eq', 'on')
-        | map(attribute='entity_id')
-        | select('search', 'switch.*')
-        | list
-        | count
-        }} "
-
-  ### ESPresense ###
-- platform: mqtt_room
-  name: "Anton Samsung S21 Ultra BLE"
-  device_id: "samsung:7e86ef82bb4f"
-  state_topic: "espresense/rooms"
-  timeout: 5
-  away_timeout: 20
-- platform: mqtt_room
-  name: "Anton Garmin Forerunner 245 BLE"
-  device_id: "garmin:90f15751a4ca"
-  state_topic: "espresense/rooms"
-  timeout: 5
-  away_timeout: 20
-
-
-
-
-  
-
 - platform: sjofartsverket_viva
   name: Vind
   region: 164
@@ -112,9 +58,9 @@
   sensors:
     utetemperatur:
       friendly_name: "Utetemp"
-      entity_id: weather.deprecated
+      entity_id: weather.forecast_hertig_eriks_vag_21c
       unit_of_measurement: "°C"
-      value_template: "{{ state_attr('deprecated', 'temperature') }}"
+      value_template: "{{ state_attr('weather.forecast_hertig_eriks_vag_21c', 'temperature') }}"
 
 - platform: template
   sensors:
@@ -122,7 +68,40 @@
       friendly_name: "Water Liters Consumed"
       entity_id: sensor.water_meter_total
       unit_of_measurement: "L"
-      value_template: "{{ ( states('sensor.water_meter_total') | float * 1000 ) | round(3) }}"
+      value_template: "{{ ( states('sensor.water_meter_total_2') | float * 1000 ) | round(3) }}"
+
+- platform: template
+  sensors:
+    total_water_cost:
+      friendly_name: "Total Water Cost"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set usage = states('sensor.water_meter_total_2') | float %}
+        {% set fixed_tariff = 26.25 %}
+        {% set cost = usage * fixed_tariff %}
+        {{ cost | round(2) }}
+
+- platform: template
+  sensors:
+    weekly_water_cost:
+      friendly_name: "Weekly Water Cost"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set usage = states('sensor.water_used_weekly') | float %}
+        {% set fixed_tariff = 0.02625 %}
+        {% set cost = usage * fixed_tariff %}
+        {{ cost | round(2) }}
+
+- platform: template
+  sensors:
+    weekly_energy_cost:
+      friendly_name: "Weekly Energy Cost"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set usage = states('sensor.weekly_energy_use') | float %}
+        {% set fixed_tariff = 0.68 %}
+        {% set cost = usage * fixed_tariff %}
+        {{ cost | round(2) }}
 
 - platform: template
   sensors:
@@ -189,13 +168,115 @@
           Extremt mycket
         {% endif %}
 
-
-
 - platform: rest
   resource: https://services.viva.sjofartsverket.se:8080/output/vivaoutputservice.svc/vivastation/89
   name: "VIVA Vattenstånd och Vattentemp"
-  value_template: '{{ value_json.GetSingleStationResult.Samples[1].Value }}'
+  value_template: "{{ value_json.GetSingleStationResult.Samples[1].Value }}"
   unit_of_measurement: "°C"
-  scan_interval: 300  # Adjust the interval as needed
+  scan_interval: 300 # Adjust the interval as needed
   json_attributes:
     - GetSingleStationResult
+
+- platform: template
+  sensors:
+    total_lights_on:
+      value_template: >
+        {{ states.light | rejectattr('attributes.entity_id', 'defined') | selectattr('state', 'eq', 'on') | list | count }}
+
+- platform: template
+  sensors:
+    vardagsrum_lights_on_count:
+      value_template: >
+        {{ states.light.vardagsrum | rejectattr('attributes.entity_id', 'defined') | selectattr('state', 'eq', 'on') | list | count }}
+
+- platform: template
+  sensors:
+    num_in_master_bed:
+      friendly_name: "Number of People in Bed"
+      unit_of_measurement: "people"
+      value_template: >-
+        {% if is_state('binary_sensor.person_1_in_bed', 'on') and is_state('binary_sensor.person_2_in_bed', 'on') %}
+            2
+        {% elif is_state('binary_sensor.person_1_in_bed', 'on') or is_state('binary_sensor.person_2_in_bed', 'on') %}
+            1
+        {% else %}
+            0
+        {% endif %}
+
+# For use in Utility Meters to track set and moving energy rates * usage
+- platform: template
+  sensors:
+    total_energy_cost_set_rate:
+      friendly_name: "Total Energy Cost Set Rate"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set usage = states('sensor.frient_utility_meter_test') | float %}
+        {% set fixed_tariff = 0.68 %}
+        {% set cost = usage * fixed_tariff %}
+        {{ cost | round(2) }}
+
+- platform: template
+  sensors:
+    total_energy_cost_moving_rate:
+      friendly_name: "Total Energy Cost Moving Rate"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set usage = states('sensor.frient_utility_meter_test') | float %}
+        {% set set_tariff = states('sensor.nordpool_kwh_se3_sek_3_10_025') | float %}
+        {% set cost = usage * set_tariff %}
+        {{ cost | round(2) }}
+
+# Comparison between rates. Positive value indicate earnings, negative indicate loss
+- platform: template
+  sensors:
+    energy_rates_hourly_comparison:
+      friendly_name: "Energy Rates Hourly Earnings Comparison"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set moving = states('sensor.hourly_moving_rate_cost') | float %}
+        {% set steady = states('sensor.hourly_set_rate_cost') | float %}
+        {% set comp = moving - steady %}
+        {{ comp | round(2) }}
+    energy_rates_daily_comparison:
+      friendly_name: "Energy Rates Daily Earnings Comparison"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set moving = states('sensor.daily_moving_rate_cost') | float %}
+        {% set steady = states('sensor.daily_set_rate_cost') | float %}
+        {% set comp = moving - steady %}
+        {{ comp | round(2) }}
+    energy_rates_weekly_comparison:
+      friendly_name: "Energy Rates Weekly Earnings Comparison"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set moving = states('sensor.weekly_moving_rate_cost') | float %}
+        {% set steady = states('sensor.weekly_set_rate_cost') | float %}
+        {% set comp = moving - steady %}
+        {{ comp | round(2) }}
+    energy_rates_monthly_comparison:
+      friendly_name: "Energy Rates Monthly Earnings Comparison"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set moving = states('sensor.monthly_moving_rate_cost') | float %}
+        {% set steady = states('sensor.monthly_set_rate_cost') | float %}
+        {% set comp = moving - steady %}
+        {{ comp | round(2) }}
+    energy_rates_yearly_comparison:
+      friendly_name: "Energy Rates Yearly Earnings Comparison"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set moving = states('sensor.yearly_moving_rate_cost') | float %}
+        {% set steady = states('sensor.yearly_set_rate_cost') | float %}
+        {% set comp = moving - steady %}
+        {{ comp | round(2) }}
+
+- platform: template
+  sensors:
+    total_energy_cost_set_rate:
+      friendly_name: "Total Energy Cost Set Rate"
+      unit_of_measurement: "SEK"
+      value_template: >
+        {% set usage = states('sensor.sensor.water_meter_total_2') | float %}
+        {% set price_per_m3 = 26,25 %}
+        {% set cost = (usage * price_per_m3) / 1000 %}
+        {{ cost | round(2) }}

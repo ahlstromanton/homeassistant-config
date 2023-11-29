@@ -155,9 +155,10 @@
         ställa ut soporna!
       media_content_type: music
       extra:
-        volume: 35
+        volume: 55
     target:
-      entity_id: media_player.sonos_kontor_tts
+      entity_id:
+      - media_player.vardagsrum_3
   - service: media_player.play_media
     data:
       media_content_id: media-source://tts/google_translate?message=Glöm inte att
@@ -166,10 +167,12 @@
       extra:
         volume: 45
     target:
-      entity_id: media_player.sonos_vardagsrum_tts
+      entity_id: media_player.kontor_2
   - service: telegram_bot.send_message
     data:
       message: "\U0001F5D1 Glöm inte att ställa ut soporna! \U0001F5D1"
+      data:
+        priority: high
   - service: notify.mobile_app_liosh4yht2qr0f0n
     data:
       message: "\U0001F5D1 Glöm inte att ställa ut soporna!"
@@ -283,55 +286,6 @@
       entity_id: scene.resetkontor
     data: {}
   mode: single
-- id: '1672666653422'
-  alias: Ljus/Motion - Tänd nedervåning
-  description: ''
-  trigger:
-  - type: occupied
-    platform: device
-    device_id: 69a435c1f007eae966bddf437d86b5bb
-    entity_id: binary_sensor.vardagsrum_hue_motion_occupancy
-    domain: binary_sensor
-  condition:
-  - condition: state
-    entity_id: input_boolean.tv_mode
-    state: 'off'
-  action:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: binary_sensor.ljus_tod_morgon
-        state: 'on'
-      sequence:
-      - service: scene.turn_on
-        target:
-          entity_id: scene.ljus_nedervaning_kvall
-        metadata: {}
-    - conditions:
-      - condition: state
-        entity_id: binary_sensor.ljus_tod_dag
-        state: 'on'
-      - condition: state
-        entity_id: media_player.samsung_8_series_65
-        state: 'off'
-      sequence:
-      - service: scene.turn_on
-        target:
-          entity_id: scene.ljus_nedervaning_dag
-        metadata: {}
-    - conditions:
-      - condition: state
-        entity_id: binary_sensor.ljus_tod_kvall
-        state: 'on'
-      - condition: state
-        entity_id: media_player.samsung_8_series_65
-        state: 'off'
-      sequence:
-      - service: scene.turn_on
-        target:
-          entity_id: scene.ljus_nedervaning_kvall
-        metadata: {}
-  mode: restart
 - id: '1672700007142'
   alias: Notis - Sally lämnades/hämtades
   description: ''
@@ -385,102 +339,6 @@
         data: {}
         target:
           entity_id: input_boolean.sally_hos_christina
-  mode: single
-- id: '1672738505494'
-  alias: Kontroll - Kajsas Kontor
-  description: ''
-  trigger:
-  - device_id: 0418be9d66ac07b618c5a8438a1602d7
-    domain: zha
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_off
-    id: off-short
-  - device_id: 0418be9d66ac07b618c5a8438a1602d7
-    domain: zha
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_on
-    id: on-short
-  - device_id: 0418be9d66ac07b618c5a8438a1602d7
-    domain: zha
-    platform: device
-    type: remote_button_long_press
-    subtype: dim_up
-    id: on-long
-  - device_id: 0418be9d66ac07b618c5a8438a1602d7
-    domain: zha
-    platform: device
-    type: remote_button_long_press
-    subtype: dim_down
-    id: off-long
-  - device_id: 0418be9d66ac07b618c5a8438a1602d7
-    domain: zha
-    platform: device
-    type: remote_button_short_press
-    subtype: left
-    id: vanster
-  - device_id: 0418be9d66ac07b618c5a8438a1602d7
-    domain: zha
-    platform: device
-    type: remote_button_short_press
-    subtype: right
-    id: hoger
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: off-short
-      sequence:
-      - service: light.turn_off
-        data: {}
-        target:
-          area_id: kajsas_kontor
-    - conditions:
-      - condition: trigger
-        id: on-short
-      sequence:
-      - service: light.turn_on
-        data: {}
-        target:
-          area_id: kajsas_kontor
-    - conditions:
-      - condition: trigger
-        id: on-long
-      sequence:
-      - device_id: 33d095387f94a5483f22b6f667ce9043
-        domain: light
-        entity_id: light.bollampa_kajsas_kontor_light
-        type: brightness_increase
-    - conditions:
-      - condition: trigger
-        id: off-long
-      sequence:
-      - device_id: 33d095387f94a5483f22b6f667ce9043
-        domain: light
-        entity_id: light.bollampa_kajsas_kontor_light
-        type: brightness_decrease
-    - conditions:
-      - condition: trigger
-        id: vanster
-      sequence:
-      - service: light.turn_on
-        entity_id: light.bollampa_kajsas_kontor_light
-        data:
-          hs_color:
-          - '{{ range(0,360) | random }}'
-          - '{{ range(70,100) | random }}'
-    - conditions:
-      - condition: trigger
-        id: hoger
-      sequence:
-      - service: light.turn_on
-        entity_id: light.bollampa_kajsas_kontor_light
-        data:
-          hs_color:
-          - '{{ range(0,360) | random }}'
-          - '{{ range(70,100) | random }}'
   mode: single
 - id: '1672740658350'
   alias: Kontroll - Matplats
@@ -639,42 +497,6 @@
         target:
           entity_id: counter.kajsa_gym_counter
   mode: single
-- id: '1673211932340'
-  alias: Ljus - Släck på nedervåning om inaktiv i 20min
-  description: ''
-  trigger:
-  - type: not_occupied
-    platform: device
-    device_id: 69a435c1f007eae966bddf437d86b5bb
-    entity_id: binary_sensor.vardagsrum_hue_motion_occupancy
-    domain: binary_sensor
-    for:
-      hours: 0
-      minutes: 15
-      seconds: 0
-  condition:
-  - condition: time
-    after: '22:00:00'
-    before: 05:00:00
-  - condition: state
-    entity_id: media_player.samsung_8_series_65
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.guest_mode
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.tv_mode
-    state: 'off'
-  action:
-  - service: script.turn_off_lights_downstairs
-    data: {}
-  - service: notify.desktop
-    data:
-      message: Släckte alla lampor på nedervånignen
-  - service: telegram_bot.send_message
-    data:
-      message: "\U0001F4A1 Släckte nedanvåningen"
-  mode: restart
 - id: '1673371601991'
   alias: Ljus - Ytterdörr - Blinka A kontor om öppnades
   description: ''
@@ -709,7 +531,7 @@
   trigger:
   - platform: state
     entity_id:
-    - sensor.desktop_activewindow
+    - sensor.desktop_activewindow_2
     to: Standardlåsskärm för Windows
     for:
       hours: 0
@@ -717,7 +539,7 @@
       seconds: 0
   condition:
   - condition: time
-    after: '22:00:00'
+    after: '22:01:00'
     before: 05:00:00
   - condition: state
     entity_id: person.anton
@@ -747,7 +569,7 @@
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.lumi_lumi_sensor_magnet_aq2_opening
+    - binary_sensor.hall_dorrsensor_opening
     to: unavailable
   condition: []
   action:
@@ -871,36 +693,6 @@
           - uterum
           - vardagsrum
   mode: single
-- id: '1674668200101'
-  alias: Ljus/Motion - Trapphus - Tänd 3 min rörelse övervåning
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.trapphus_ikea_motion_sensor_motion
-    to: 'on'
-  condition: []
-  action:
-  - service: light.turn_on
-    data:
-      brightness_pct: 25
-    target:
-      entity_id:
-      - light.trapphus_vagglampa_1
-      - light.trapphus_vagglampa_2
-  - delay:
-      hours: 0
-      minutes: 3
-      seconds: 0
-      milliseconds: 0
-  - service: light.turn_off
-    data:
-      transition: 5
-    target:
-      entity_id:
-      - light.trapphus_vagglampa_1
-      - light.trapphus_vagglampa_2
-  mode: single
 - id: '1674911649697'
   alias: Notis - Dags att hämta Sally
   description: ''
@@ -970,6 +762,8 @@
       - service: telegram_bot.send_message
         data:
           message: "\U0001F469\U0001F3FC Kajsa gick hemifrån!"
+          data:
+            priority: high
     - conditions:
       - condition: trigger
         id: home
@@ -977,6 +771,8 @@
       - service: telegram_bot.send_message
         data:
           message: "\U0001F469\U0001F3FC Kajsa kom hem!"
+          data:
+            priority: high
   mode: single
 - id: '1676499593564'
   alias: Ljus/Proximity - Tänd när någon är > 50m hemifrån
@@ -1111,40 +907,6 @@
       zone_filter: false
       zones: []
       camera: camera.entrance_frigate
-- id: '1684699090877'
-  alias: Change tv mode bool
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - media_player.samsung_8_series_65
-    to: 'on'
-    id: 'on'
-  - platform: state
-    entity_id:
-    - media_player.samsung_8_series_65
-    to: 'off'
-    id: 'off'
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: 'off'
-      sequence:
-      - service: input_boolean.turn_off
-        data: {}
-        target:
-          entity_id: input_boolean.tv_mode
-    - conditions:
-      - condition: trigger
-        id: 'on'
-      sequence:
-      - service: input_boolean.turn_on
-        data: {}
-        target:
-          entity_id: input_boolean.tv_mode
-  mode: single
 - id: '1684699455821'
   alias: Ljus - TV-ljus
   description: ''
@@ -1159,7 +921,10 @@
     data:
       brightness_pct: 25
     target:
-      entity_id: light.vardagsrum_golvlampa
+      entity_id:
+      - light.vardagsrum_golvlampa
+      - light.vardagsrum_fonsterlampa_svamp
+      - light.vardagsrum_skap_orange
   - service: light.turn_off
     data: {}
     target:
@@ -1167,6 +932,7 @@
       - light.vardagsrum_bubbellampa
       - light.vardagsrum_fonsterlampa_svart
       - light.vardagsrum_vagglampa_arm
+      - light.vardagsrum_fonsterlampa_marmor
   mode: single
 - id: '1684925134411'
   alias: Notis - Åska
@@ -1309,71 +1075,6 @@
         target:
           entity_id: vacuum.roborock_s6_pure
   mode: single
-- id: '1686225526965'
-  alias: Ljus - Tänd utebelysning om person detected och solen gått ned
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.entrance_frigate_person_occupancy
-    to: 'on'
-  condition:
-  - condition: or
-    conditions:
-    - condition: sun
-      before: sunrise
-    - condition: sun
-      after: sunset
-  action:
-  - service: light.turn_on
-    data:
-      transition: 5
-      brightness_pct: 100
-    target:
-      entity_id: light.framsida_utelampa_huelight
-  - delay:
-      hours: 0
-      minutes: 5
-      seconds: 0
-      milliseconds: 0
-  - service: light.turn_off
-    data:
-      transition: 10
-    target:
-      entity_id: light.framsida_utelampa_huelight
-  mode: single
-- id: '1688416655680'
-  alias: Wallpanel - Switch - Laddare Tablet
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.samsung_a8_wallpanel_battery_level
-    below: 20
-    id: below
-  - platform: numeric_state
-    entity_id: sensor.samsung_a8_wallpanel_battery_level
-    above: 75
-    id: above
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: below
-      sequence:
-      - service: switch.turn_on
-        data: {}
-        target:
-          entity_id: switch.a_kontor_plugg_laddare_switch_2
-    - conditions:
-      - condition: trigger
-        id: above
-      sequence:
-      - service: switch.turn_off
-        data: {}
-        target:
-          entity_id: switch.a_kontor_plugg_laddare_switch_2
-  mode: single
 - id: '1688417046815'
   alias: Wallpanel - Turn On/Off Screen
   description: ''
@@ -1433,8 +1134,9 @@
       sequence:
       - service: fully_kiosk.load_url
         data:
+          url: http://192.168.1.120:8123/wallpanel-a-kontor/kamera-garden
+        target:
           device_id: c5ca26faecd21ae8954fcb089f1d9a1f
-          url: http://192.168.1.200:8123/wallpanel-a-kontor/kamera-garden
     - conditions:
       - condition: trigger
         id: below
@@ -1465,8 +1167,9 @@
       sequence:
       - service: fully_kiosk.load_url
         data:
+          url: http://192.168.1.120:8123/wallpanel-a-kontor/kamera-entre
+        target:
           device_id: c5ca26faecd21ae8954fcb089f1d9a1f
-          url: http://192.168.1.200:8123/wallpanel-a-kontor/kamera-entre
     - conditions:
       - condition: trigger
         id: below
@@ -1489,4 +1192,481 @@
   - service: telegram_bot.send_message
     data:
       message: "\U0001F3CB️‍♂️ Crossfit bokad om 2,5 timmar!"
+  mode: single
+- id: '1696718771947'
+  alias: Input Bool - Any light on/off
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.total_lights_on
+    above: 0
+    id: over
+  - platform: numeric_state
+    entity_id: sensor.total_lights_on
+    below: 1
+    id: under
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - over
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.any_light_on
+    - conditions:
+      - condition: trigger
+        id:
+        - under
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.any_light_on
+  mode: single
+- id: '1698779947750'
+  alias: Ljus - Innergård
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.entrance_frigate_person_occupancy
+    to: 'on'
+  - type: opened
+    platform: device
+    device_id: 4cb8cced2797af962d8fded7d303531d
+    entity_id: 4a0ad3db7cea47747016b3a0735c42b3
+    domain: binary_sensor
+  condition:
+  - condition: sun
+    after: sunset
+    after_offset: -0:30:00
+    before: sunrise
+    before_offset: 0:30
+  action:
+  - service: light.turn_on
+    data:
+      brightness_pct: 100
+      transition: 3
+    target:
+      device_id: eae9386c0b53d8e59323ff1ec9fed718
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  - service: light.turn_off
+    data:
+      transition: 3
+    target:
+      device_id: eae9386c0b53d8e59323ff1ec9fed718
+  mode: restart
+- id: '1698855431813'
+  alias: Vacuum - Reminder
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - vacuum.roborock_s6_pure
+    to: Docked
+    for:
+      hours: 48
+  - platform: event
+    event_type: mobile_app_notification_action
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: vacuum.roborock_s6_pure
+        state: docked
+      sequence:
+      - service: notify.mobile_app_antons_pixel_7_pro
+        data:
+          message: It's been 2 days since the vacuum last cleaned. Do you want to
+            start it?
+          data:
+            actions:
+            - action: clean_now
+              title: Clean Now
+            - action: clean_later
+              title: Clean in One Hour
+            - action: remind_tomorrow
+              title: Remind me tomorrow
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''clean_now'' }}'
+      sequence:
+      - service: vacuum.start
+        entity_id: vacuum.roborock_s6_pure
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''clean_later'' }}'
+      sequence:
+      - delay: 01:00:00
+      - service: vacuum.start
+        entity_id: vacuum.roborock_s6_pure
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''remind_tomorrow'' }}'
+      sequence:
+      - delay: '24:00:00'
+      - condition: state
+        entity_id: vacuum.roborock_s6_pure
+        state: docked
+      - service: notify.mobile_app_antons_pixel_7_pro
+        data:
+          message: 'Reminder: It''s been more than 2 days since the vacuum last
+
+            cleaned. Do you want to start it?
+
+            '
+          data:
+            actions:
+            - action: clean_now
+              title: Clean Now
+            - action: clean_later
+              title: Clean in One Hour
+            - action: remind_tomorrow
+              title: Remind me tomorrow
+  initial_state: true
+- id: '1699386884555'
+  alias: Ljus/Motion - Kök - Diskbänk Liten
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 4e6050e09467a93eb64104f86665e4fc
+    entity_id: a168e62e5ed48924b705dba4e8cf0cff
+    domain: binary_sensor
+    id: detected
+  - type: no_motion
+    platform: device
+    device_id: 4e6050e09467a93eb64104f86665e4fc
+    entity_id: a168e62e5ed48924b705dba4e8cf0cff
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    id: clear
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - detected
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 100
+        target:
+          entity_id: light.kitchen_diskbank_liten_lampa
+    - conditions:
+      - condition: trigger
+        id:
+        - clear
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.kitchen_diskbank_liten_lampa
+  mode: restart
+- id: '1699913687826'
+  alias: Notis - Energy report Anton
+  description: Fire a energy report notification to Antons mobile phone the first
+    of every month
+  trigger:
+    platform: time
+    at: 00:00:01
+  condition:
+    condition: template
+    value_template: '{{ now().day == 1 }}'
+  action:
+  - service: notify.mobile_app_antons_pixel_7_pro
+    data:
+      message: "Last months energy report is here.\nYou used {{ state_attr('sensor.monthly_energy_use',
+        'last_period') | default(0) | float }} kWh. {% set cost_comparison = state_attr('sensor.monthly_cost_comparison',
+        'last_period_usage') | default(0) | float %} {% if cost_comparison > 0 %}\n
+        \ You lost {{ cost_comparison | abs | round(2) }} SEK compared to if you would
+        have had an hourly tariff.\n{% elif cost_comparison < 0 %}\n  You earned {{
+        cost_comparison | abs | round(2) }} SEK compared to if you would have had
+        an hourly tariff.\n{% else %}\n  There was no cost difference compared to
+        an hourly tariff.\n{% endif %}"
+  mode: single
+- id: '1700151320036'
+  alias: Notis - Läggdags
+  description: ''
+  trigger:
+  - alias: 8 hours before the next alarm
+    platform: template
+    value_template: '{{ now().strftime(''%a %h %d %H:%M %Z %Y'') == (((state_attr(''sensor.antons_pixel_7_pro_next_alarm'',
+      ''Time in Milliseconds'') | int / 1000 - 8*3600) ) | timestamp_custom(''%a %h
+      %d %H:%M %Z %Y'')) }}'
+    id: 8-hours
+  - alias: 7 hours before the next alarm
+    platform: template
+    value_template: '{{ now().strftime(''%a %h %d %H:%M %Z %Y'') == (((state_attr(''sensor.antons_pixel_7_pro_next_alarm'',
+      ''Time in Milliseconds'') | int / 1000 - 7*3600) ) | timestamp_custom(''%a %h
+      %d %H:%M %Z %Y'')) }}'
+    id: 7-hours
+  condition:
+  - condition: time
+    after: '19:00:00'
+    before: 06:00:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - sun
+  - condition: state
+    entity_id: person.anton
+    state: home
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 8-hours
+      sequence:
+      - service: notify.mobile_app_antons_pixel_7_pro
+        data:
+          title: Det är 8 timmar innan du skall gå upp
+          message: Gå och lägg dig!
+        alias: Send "go to bed" notification to Antons phone
+      - alias: Send "go to bed" notification to Antons phone
+        service: notify.desktop
+        data:
+          title: Det är 8 timmar innan du skall gå upp
+          message: Gå och lägg dig!
+    - conditions:
+      - condition: trigger
+        id:
+        - 7-hours
+      sequence:
+      - alias: Send "go to bed" notification to Antons phone
+        service: notify.mobile_app_antons_pixel_7_pro
+        data:
+          title: Det är 7 timmar innan du skall gå upp
+          message: Sista varningen! Gå och lägg dig!
+      - alias: Send "go to bed" notification to Desktop
+        service: notify.desktop
+        data:
+          title: Det är 7 timmar innan du skall gå upp
+          message: Sista varningen! Gå och lägg dig!
+  mode: single
+- id: '1700553440519'
+  alias: Kontroll - K Kontor
+  description: ''
+  trigger:
+  - device_id: 8728839610ba729f3f06e1bccb25e3f6
+    domain: zha
+    platform: device
+    type: remote_button_long_release
+    subtype: dim_down
+    id: dim-down-released
+  - device_id: 8728839610ba729f3f06e1bccb25e3f6
+    domain: zha
+    platform: device
+    type: remote_button_long_release
+    subtype: dim_up
+    id: dim-up-released
+  - device_id: 8728839610ba729f3f06e1bccb25e3f6
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+    id: short-up
+  - device_id: 8728839610ba729f3f06e1bccb25e3f6
+    domain: zha
+    platform: device
+    type: remote_button_long_press
+    subtype: dim_up
+    id: long-up
+  - device_id: 8728839610ba729f3f06e1bccb25e3f6
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_off
+    id: short-down
+  - device_id: 8728839610ba729f3f06e1bccb25e3f6
+    domain: zha
+    platform: device
+    type: remote_button_long_press
+    subtype: dim_down
+    id: long-down
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - short-up
+      sequence:
+      - service: light.turn_on
+        data: {}
+        target:
+          entity_id: light.k_kontor_grupp
+    - conditions:
+      - condition: trigger
+        id:
+        - short-down
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.k_kontor_grupp
+    - conditions:
+      - condition: trigger
+        id:
+        - long-up
+      sequence:
+      - repeat:
+          sequence:
+          - device_id: 1319a960c6c6f271c2df48cb530c34bb
+            domain: light
+            entity_id: ab17c46f6bd6d2955287d858de2e8f34
+            type: brightness_increase
+          - device_id: d41cfba1dd86dbb6e6759e339c4a291e
+            domain: light
+            entity_id: 198d0bd075838679139a77536d009637
+            type: brightness_increase
+          - device_id: 386fd08ddb3877f42f5536529886168e
+            domain: light
+            entity_id: ba91e659dd6dff7326a02a23bb33cf97
+            type: brightness_increase
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 0
+              milliseconds: 500
+          while:
+          - condition: trigger
+            id:
+            - long-up
+    - conditions:
+      - condition: trigger
+        id:
+        - long-down
+      sequence:
+      - repeat:
+          sequence:
+          - device_id: 1319a960c6c6f271c2df48cb530c34bb
+            domain: light
+            entity_id: ab17c46f6bd6d2955287d858de2e8f34
+            type: brightness_decrease
+          - device_id: d41cfba1dd86dbb6e6759e339c4a291e
+            domain: light
+            entity_id: 198d0bd075838679139a77536d009637
+            type: brightness_decrease
+          - device_id: 386fd08ddb3877f42f5536529886168e
+            domain: light
+            entity_id: ba91e659dd6dff7326a02a23bb33cf97
+            type: brightness_decrease
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 0
+              milliseconds: 500
+          while:
+          - condition: trigger
+            id:
+            - long-down
+    - conditions:
+      - condition: trigger
+        id:
+        - dim-down-released
+        - dim-up-released
+      sequence:
+      - service: automation.reload
+        data: {}
+  mode: restart
+- id: '1700660346899'
+  alias: Notis - Cleaning report
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - vacuum.roborock_s6_pure
+    from: cleaning
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  condition:
+  - condition: state
+    entity_id: vacuum.roborock_s6_pure
+    attribute: errorCode
+    state: '0'
+  action:
+  - service: notify.both_phones
+    data:
+      message: "{% set rooms = state_attr('camera.roborock_s6_pure_map', 'cleaned_rooms')
+        %} {% set duration = states('sensor.roborock_s6_pure_current_clean_duration')
+        | int / 60 %} {% set area = states('sensor.roborock_s6_pure_last_clean_area')
+        %} \U0001F9F9 Cleaning completed! Cleaning report:  {% if rooms %}The following
+        rooms have been cleaned: {{ rooms | join(', ') }}{% else %}No rooms have been
+        cleaned.{% endif %} Cleaning duration: {{ duration | round(1) }} minutes.
+        \ Area cleaned: {{ area }} m².\n"
+  mode: single
+- id: '1700663098777'
+  alias: Notis - Roborock error
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - vacuum.roborock_s6_pure
+    attribute: errorCode
+    from: '0'
+  condition: []
+  action:
+  - service: notify.both_phones
+    data:
+      title: Roborock
+      message: "{% set errorCode = states.vacuum.roborock_s6_pure.attributes.errorCode
+        | int %} {% set errorMessages = {\n  1: \"Rotate the laser head to check that
+        it turns freely. The LDS unit is jammed. Remove any items blocking it then
+        move the robot to a new location and restart.\",\n  2: \"Clean and lightly
+        tap the bumper. The bumper is stuck. Tap the bumper repeatedly to dislodge
+        any jammed items. If nothing falls out, move the robot to a new location and
+        restart.\",\n  3: \"Move the robot to a new location and restart. A wheel
+        is suspended. Move the robot to a new location and restart.\",\n  4: \"Wipe
+        the cliff sensors, move the robot away from raised edges, and restart. The
+        robot is suspended. Move it to a new location and restart. If the problem
+        persists, clean the cliff sensors.\",\n  5: \"Remove the main brush and clean
+        the brush and bearing. The main brush may be tangled up. Remove and clean
+        it.\",\n  6: \"Remove and clean the side brush. The side brush may be tangled
+        up. Remove and clean it.\",\n  7: \"Look for anything stuck in the main wheels
+        then move the robot to a new location and restart. The main wheels may be
+        jammed. Remove and clean them.\",\n  8: \"Clear away any obstacles around
+        the robot. The robot may be stuck. Clear any obstacles around it.\",\n  9:
+        \"Install the dustbin and filter. Reinstall the dustbin and filter and check
+        that they are installed properly. If the problem persists, try replacing the
+        filter.\",\n  10: \"The filter is either wet or blocked. The filter is not
+        completely dry. Dry the filter for at least 24 hours. The filter may also
+        require cleaning. If the problem persists, replace the filter.\",\n  11: \"High-intensity
+        magnetic field detected. Move the robot away from the magnetic tape and restart.
+        The robot is too close to a magnetic tape and cannot start. Move it to a new
+        location and restart.\",\n  12: \"The battery is too low. Recharge before
+        use. Low battery. Recharge before use.\",\n  13: \"Charging error. Clean the
+        charging contact area. Use a dry cloth to clean the charging contacts on the
+        robot and on the charging dock.\",\n  14: \"Battery error. The battery temperature
+        is either too high or too low. Wait until it returns to normal temperature.\",\n
+        \ 16: \"Robot is tilted. Place it on flat ground and restart. The robot is
+        tilted. Move it to flat ground and restart.\",\n  17: \"Side brush module
+        error. Reset the system. The side brush module is experiencing a fault. Reset
+        the system.\",\n  18: \"Vacuum fan error. Reset the system. The vacuum fan
+        is experiencing a fault. Reset the system.\",\n  22: \"Please wipe the recharge
+        sensor. The recharge sensor is blocked by dust. Please wipe the dust off.\",\n
+        \ 23: \"Please clear the signal emission area of the dock charger. The charging
+        dock is jammed. Clear and retry.\",\n  24: \"Virtual no-go zone or wall detected.
+        Move the robot to a new location and restart. Move the robot away from the
+        virtual no-go zone or barrier and restart.\",\n  26: \"Wipe the wall sensor.
+        The wall sensor is dirty. Wipe it clean.\"\n} %} {% set errorMessage = errorMessages[errorCode]
+        if errorCode in errorMessages else \"Unknown error code: \" ~ errorCode %}
+        \"Error {{ errorCode }}: {{ errorMessage }}\"\n"
   mode: single

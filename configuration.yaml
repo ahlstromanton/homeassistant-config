@@ -14,6 +14,11 @@ http:
     - 192.168.1.175
     - 192.168.1.103
 
+logger:
+  default: info
+  logs:
+    homeassistant.components.rest: debug
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
@@ -56,19 +61,6 @@ proximity:
     tolerance: 50
     unit_of_measurement: m
 
-# WoL Desktop
-switch:
-  - platform: wake_on_lan
-    name: "Desktop WoL"
-    mac: "deprecated"
-    host: 192.168.1.10
-  - platform: wake_on_lan
-    name: "Ubuntu Server WoL"
-    mac: "deprecated"
-    host: 192.168.1.63
-    turn_off:
-      service: shell_command.turn_off_ubuntuserver
-
 # Notification group - bådas telefoner
 
 notify:
@@ -76,24 +68,53 @@ notify:
     name: "both_phones"
     services:
       - service: mobile_app_antons_pixel_7_pro
-      - service: mobile_app_kajsas_s22
+      - service: mobile_app_kajsas_s23
 
 # Telegram
 telegram_bot:
   - platform: broadcast
     api_key: !secret telegram_token
     allowed_chat_ids:
-      - 1999256073
+      - ###
 
 wake_on_lan:
 
-#### Used for Roborock map card ####
-# Rums-id nedervåning: [[16, '230001055629'], [17, '230001058358'], [18, '230001058359'], [19, '230001058360'], [20, '230001058361']]
 
 # Home Connect alt
 home_connect_alt:
-  client_id: deprecated
-  client_secret: deprecated
+  client_id: ###
+  client_secret: ###
+binary_sensor:
+  - platform: template
+    sensors:
+      person_1_in_bed:
+        friendly_name: "Person 1 in Bed"
+        value_template: >
+          {{ states('sensor.bed')|float >= 60 }}
+      person_2_in_bed:
+        friendly_name: "Person 2 in Bed"
+        value_template: >
+          {{ states('sensor.bed')|float > 20
+            and (states('sensor.bed')|float < 60 
+                or states('sensor.bed')|float >= 90 )}}
 
-shell_command:
-  turn_off_ubuntuserver: "ssh hassio@192.168.1.10 sudo systemctl suspend"
+# I arduino-sketchen finns ett if-statement som gör att den visar 0 om värdet är <0, ta bort detta för att testa
+mqtt:
+  sensor:
+    - name: "Bed"
+      state_topic: "home/bedroom/bed"
+      unit_of_measurement: "kg"
+    - name: "Bed Raw"
+      state_topic: "home/bedroom/bed/raw"
+      unit_of_measurement: "raw"
+
+rest:
+  resource_template: "https://sholiday.faboul.se/dagar/v2.1/{{ now().year }}/{{ now().month }}/{{ now().day }}"
+  method: GET
+  scan_interval: 30
+  sensor:
+    name: "namnsdag_raw"
+    unique_id: namnsdagraw1
+    json_attributes:
+      - dagar
+

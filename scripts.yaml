@@ -1,18 +1,3 @@
-spela_p3_i_vardagsrummet:
-  alias: Spela P3 i Vardagsrummet
-  sequence:
-  - service: media_player.volume_set
-    data:
-      volume_level: 0.25
-    target:
-      entity_id: media_player.sonos_vardagsrum_2
-  - service: media_player.play_media
-    data:
-      media_content_id: http://sverigesradio.se/topsy/direkt/srapi/164.mp3
-      media_content_type: music
-    target:
-      entity_id: media_player.sonos_vardagsrum_2
-  mode: queued
 all_lights_off:
   alias: Turn off lights in all areas
   sequence:
@@ -47,3 +32,130 @@ turn_off_lights_downstairs:
       - hall
   mode: single
   icon: mdi:lightbulb-multiple-off-outline
+find_antons_phone:
+  alias: Find Antons phone
+  sequence:
+  - service: notify.mobile_app_antons_pixel_7_pro
+    data:
+      message: Här är jag!
+      data:
+        priority: high
+        channel: alarm_stream
+  mode: single
+  icon: fas:mobile-screen
+find_kajsas_phone:
+  alias: Find Kajsas phone
+  sequence:
+  - service: notify.mobile_app_kajsas_s23
+    data:
+      message: Find My Phone Alert
+      title: Tittut!
+      data:
+        data:
+          priority: high
+          channel: alarm_stream
+          media_stream: alarm_stream_max
+  mode: single
+  icon: fas:mobile-screen
+clean_kitchen:
+  alias: Clean Kitchen
+  sequence:
+  - service: vacuum.send_command
+    data:
+      command: app_segment_clean
+      params:
+      - segments:
+        - 17
+      - repeats: 1
+    target:
+      entity_id: vacuum.roborock_s6_pure
+  mode: single
+  icon: mdi:robot-vacuum
+'1699990366730':
+  alias: TV Lights
+  sequence:
+  - service: light.turn_on
+    data:
+      brightness_pct: 25
+    target:
+      entity_id:
+      - light.vardagsrum_golvlampa
+      - light.vardagsrum_fonsterlampa_svamp
+      - light.vardagsrum_skap_orange
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id:
+      - light.vardagsrum_bubbellampa
+      - light.vardagsrum_fonsterlampa_svart
+      - light.vardagsrum_vagglampa_arm
+      - light.vardagsrum_fonsterlampa_marmor
+  mode: single
+  icon: mdi:television-box
+media_player_vardagsrum_play:
+  alias: Media Player Vardagsrum Play
+  sequence:
+  - service: media_player.media_play
+    data: {}
+    target:
+      entity_id: media_player.vardagsrum_2
+  mode: single
+media_player_vardagsrum_pause:
+  alias: Media Player Vardagsrum Pause
+  sequence:
+  - service: media_player.media_pause
+    data: {}
+    target:
+      entity_id: media_player.vardagsrum_2
+  mode: single
+media_player_vardagsrum_volume_up:
+  alias: Media Player Vardagsrum Volume up
+  sequence:
+  - service: media_player.volume_up
+    data: {}
+    target:
+      entity_id: media_player.vardagsrum_2
+  mode: single
+media_player_vardagsrum_volume_down:
+  alias: Media Player Vardagsrum Volume down
+  sequence:
+  - service: media_player.volume_down
+    data: {}
+    target:
+      entity_id: media_player.vardagsrum_2
+  mode: single
+vardagsljus_nedervaning:
+  alias: Vardagsljus Nedervåning
+  sequence:
+  - service: light.turn_on
+    data:
+      brightness_step_pct: 70
+    target:
+      device_id:
+      - 2562efc2a94933adeec5c4eea5eb7252
+      - f3e46b44f895b9768c3ed3d116c3434d
+      - c40cc6ef8926b3dd17c9902a9a700b39
+      - fa7deb2beb8602cc3e932551f97a21bc
+      - b8a963e09ecf409a8ade6782b2bd3af8
+      - e6d5b99d8c84da97e8a4d1ec9c13f919
+      - 80a8640bbaa161058711c9b17c523af4
+  mode: single
+stadljus_nedervaning:
+  alias: Städljus Nedervåning
+  sequence:
+  - service: light.turn_on
+    data:
+      brightness_step_pct: 100
+      color_temp: 365
+    target:
+      device_id:
+      - 2562efc2a94933adeec5c4eea5eb7252
+      - f3e46b44f895b9768c3ed3d116c3434d
+      - c40cc6ef8926b3dd17c9902a9a700b39
+      - fa7deb2beb8602cc3e932551f97a21bc
+      - b8a963e09ecf409a8ade6782b2bd3af8
+      - e6d5b99d8c84da97e8a4d1ec9c13f919
+      - 80a8640bbaa161058711c9b17c523af4
+      - eb6637c3cb01277791dfe5ad585283b2
+      - 517fc393e468f3358b2d132f8378daa6
+  mode: single
